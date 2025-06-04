@@ -12,6 +12,8 @@ import kz.yandex.courier.CourierTestData;
 import org.junit.After;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.*;
+
 public class CreateCourierTests extends BaseTest {
 
     private final CourierTestData courierTestData = new CourierTestData();
@@ -38,10 +40,34 @@ public class CreateCourierTests extends BaseTest {
 
         response.then()
                 .assertThat()
-                .statusCode(201)
+                .statusCode(SC_CREATED)
                 .and()
                 .body("ok", equalTo(true));
     }
+
+    @Test
+    @DisplayName("Создание курьера без имени")
+    @Description("Создание курьера только с логином и паролем, без имени")
+    public void createCourierWithoutFirstNameTest() {
+        CourierModel courier = new CourierModel(
+                courierTestData.getExistingLogin(),
+                courierTestData.getExistingPassword(),
+                "" // имя отсутствует
+        );
+
+        Response response = CourierSteps.createCourier(courier);
+        // Получаю ID курьера, чтобы потом удалить
+        id = CourierSteps.loginCourier(courier)
+                .then().extract()
+                .path("id").toString();
+
+        response.then()
+                .assertThat()
+                .statusCode(SC_CREATED)
+                .and()
+                .body("ok", equalTo(true));
+    }
+
 
     @Test
     @DisplayName("Создание курьера без логина")
@@ -58,7 +84,7 @@ public class CreateCourierTests extends BaseTest {
         Response response = CourierSteps.createCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
@@ -79,7 +105,7 @@ public class CreateCourierTests extends BaseTest {
         Response response = CourierSteps.createCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Недостаточно данных для создания учетной записи"));
@@ -103,7 +129,7 @@ public class CreateCourierTests extends BaseTest {
 
         response.then()
                 .assertThat()
-                .statusCode(409)
+                .statusCode(SC_CONFLICT)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Этот логин уже используется. Попробуйте другой."));

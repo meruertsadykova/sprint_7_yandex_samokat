@@ -2,6 +2,7 @@ package courier.tests;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.apache.http.HttpStatus.*;
 
 import base.BaseTest;
 import io.qameta.allure.Description;
@@ -11,33 +12,38 @@ import kz.yandex.courier.CourierModel;
 import kz.yandex.courier.CourierSteps;
 import kz.yandex.courier.CourierTestData;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class LoginCourierTests extends BaseTest {
 
     private final CourierTestData courierTestData = new CourierTestData();
+    private CourierModel existingCourier;
     String id = null;
 
+
+    @Before
+    public void setUp() {
+        // Курьер, которого мы будем логинить
+        existingCourier = new CourierModel(
+                courierTestData.getExistingLogin(),
+                courierTestData.getExistingPassword()
+        );
+        CourierSteps.createCourier(existingCourier);
+    }
 
     @Test
     @DisplayName("Успешный логин курьера")
     @Description("Логин курьера в системе.Курьер может авторизоваться. Успешный запрос возвращает id.")
     public void loginCourierTest() {
-        CourierModel courier = new CourierModel(
-                courierTestData.getExistingLogin(),
-                courierTestData.getExistingPassword()
-        );
-        CourierSteps.createCourier(courier);
+        Response response = CourierSteps.loginCourier(existingCourier);
 
-        id = CourierSteps.loginCourier(courier)
-                .then()
-                .extract()
-                .path("id")
-                .toString();
-        Response response = CourierSteps.loginCourier(courier);
+        id = response.then()
+                        .extract()
+                                .path("id").toString();
         response.then()
                 .assertThat()
-                .statusCode(200)
+                .statusCode(SC_OK)
                 .and()
                 .body("id", notNullValue());
     }
@@ -54,7 +60,7 @@ public class LoginCourierTests extends BaseTest {
         Response response = CourierSteps.loginCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Недостаточно данных для входа"));
@@ -72,7 +78,7 @@ public class LoginCourierTests extends BaseTest {
         Response response = CourierSteps.loginCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(400)
+                .statusCode(SC_BAD_REQUEST)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Недостаточно данных для входа"));
@@ -90,7 +96,7 @@ public class LoginCourierTests extends BaseTest {
         Response response = CourierSteps.loginCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(404)
+                .statusCode(SC_NOT_FOUND)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Учетная запись не найдена"));
@@ -108,7 +114,7 @@ public class LoginCourierTests extends BaseTest {
         Response response = CourierSteps.loginCourier(courier);
         response.then()
                 .assertThat()
-                .statusCode(404)
+                .statusCode(SC_NOT_FOUND)
                 .and()
                 .assertThat()
                 .body("message", equalTo("Учетная запись не найдена"));

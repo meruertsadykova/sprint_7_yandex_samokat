@@ -6,11 +6,12 @@ import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import kz.yandex.order.OrderSteps;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
+
+import static org.apache.http.HttpStatus.*;
 
 public class ListOfOrderTests extends BaseTest {
 
@@ -26,7 +27,7 @@ public class ListOfOrderTests extends BaseTest {
         int actualStatusCodeCreate = responseCreate.extract().statusCode();
         List<HashMap> orderBody = responseCreate.extract().path("orders");
 
-        Assert.assertEquals(200, actualStatusCodeCreate);
+        Assert.assertEquals(SC_OK, actualStatusCodeCreate);
         Assert.assertNotNull(orderBody);
     }
 }

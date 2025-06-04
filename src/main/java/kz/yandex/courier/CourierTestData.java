@@ -1,5 +1,6 @@
 package kz.yandex.courier;
 
+import com.github.javafaker.Faker;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,24 +24,12 @@ public class CourierTestData {
      * Конструктор класса, инициализирующий рандомные тестовые данные
      */
     public CourierTestData() {
-        this.existingLogin = randomLoginOrPass(9);
-        this.nonExistentLogin = randomLoginOrPass(9) + "kek";
-        this.existingPassword = "existPass";
-        this.nonExistentPassword = randomLoginOrPass(8);
-        this.firstName = "firstName";
-    }
+        Faker faker = new Faker();
 
-    /**
-     * Метод для генерации случайного логина или пароля заданной длины.
-     */
-    public static String randomLoginOrPass (int length) {
-        int leftLimit = 97;   // Код символа 'a' в таблице ASCII
-        int rightLimit = 122; // Код символа 'z' в таблице ASCII
-        Random random = new Random(); // Экземпляр класса Random, для генерации случайных чисел
-        return random.ints(leftLimit, rightLimit + 1)
-                .limit(length)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
+        this.existingLogin = faker.name().username();
+        this.nonExistentLogin = faker.name().username() + "_nonexist";
+        this.existingPassword = faker.internet().password(8, 12);
+        this.nonExistentPassword = faker.internet().password(8, 12);
+        this.firstName = faker.name().firstName();
     }
-
 }
